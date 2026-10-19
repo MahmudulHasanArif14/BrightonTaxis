@@ -44,6 +44,9 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.westerncarsbrighton.co.uk"),
   alternates: {
     canonical: "/",
+    types: {
+      "application/rss+xml": "/feed.xml",
+    },
   },
   openGraph: {
     type: "website",
@@ -91,16 +94,24 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
 
   verification: {
-    google: "YOUR_GOOGLE_VERIFICATION_CODE",
-    // Other services, if needed:
-    // yandex: "YOUR_YANDEX_VERIFICATION_CODE",
-    // yahoo: "YOUR_YAHOO_VERIFICATION_CODE",
-    // other: {
-    //   "msvalidate.01": "YOUR_BING_VERIFICATION_CODE",
-    // },
+    google: "qTg069fE_wOQ9-FZZ8uxap103nlavrBbZ5mNB0ihaFU",
+  },
+  formatDetection: {
+    telephone: true,
+    date: false,
+    address: true,
+    email: true,
+    url: true,
   },
 
-  category: "Transportation",
+  referrer: "strict-origin-when-cross-origin",
+
+  other: {
+    category: "transportation",
+    classification: "Private Hire",
+    abstract:
+      "Western Cars Brighton provides professional private hire and taxi services across Brighton, Hove and surrounding areas.  the company offers 24/7 local journeys, airport transfers, corporate travel, executive vehicles, group transport and wheelchair-accessible options. Customers can book online or by phone for convenient, comfortable and reliable journeys across Sussex and beyond.",
+  },
 };
 
 export default function RootLayout({
