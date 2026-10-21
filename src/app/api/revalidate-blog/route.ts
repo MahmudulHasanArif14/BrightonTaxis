@@ -169,10 +169,13 @@ export async function POST(req: NextRequest) {
   // covers the blog index, the RSS feed and the sitemap at once — they all
   // read the same upstream request.
   //
-  // The second argument is Next 16's required cacheLife profile. "max" is the
-  // longest profile, which is what is wanted here: the entry is expired now
-  // and the next request refetches, rather than the entry being given a short
-  // new lifetime that would make the site re-poll the central API.
+  // The second argument is Next 16's required cacheLife profile, and it sets
+  // how long stale content may still be served while the fresh copy is
+  // generated in the background. "max" is the documented recommendation for
+  // stale-while-revalidate content, and it is right for a blog: a visitor who
+  // arrives in the same second as the webhook gets the previous page
+  // instantly rather than waiting on a round trip to the central API, and the
+  // new article is in place a moment later.
   revalidateTag(BLOG_TAG, "max");
   revalidated.push(BLOG_TAG);
 
