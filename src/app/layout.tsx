@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { LocalBusinessJsonLd, FaqJsonLd } from "@/components/Seo";
+import { siteUrl } from "@/lib/site";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -41,7 +42,10 @@ export const metadata: Metadata = {
   authors: [{ name: "Western Cars Brighton" }],
   creator: "Western Cars Brighton",
   publisher: "Western Cars Private Hire Limited",
-  metadataBase: new URL("https://www.westerncarsbrighton.co.uk"),
+  // One source for this site's origin, shared with the sitemap, the RSS feed
+  // and every canonical URL. It used to be written out here and again in the
+  // feed route, and the two had already drifted apart.
+  metadataBase: new URL(siteUrl()),
   alternates: {
     canonical: "/",
     types: {
@@ -51,7 +55,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_GB",
-    url: "https://www.westerncarsbrighton.co.uk",
+    url: siteUrl(),
     siteName: "Western Cars Brighton",
     title: "Brighton Taxi & Airport Transfers | Western Cars",
     description:
