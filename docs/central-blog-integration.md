@@ -63,7 +63,9 @@ The existing design is matched rather than reinterpreted: same accent, container
 
 ## Two things still to decide, and one pre-existing risk
 
-**The domain is unconfirmed.** `siteUrl()` defaults to the committed `https://www.westerncarsbrighton.co.uk`, overridable by `NEXT_PUBLIC_SITE_URL`. An uncommitted `brightontaxis.westerncars.com` also exists in the working tree. I did not guess — everything routes through one env-driven helper, so confirming the real domain is a single variable, not a code change. **Canonical URLs and the sitemap are wrong until this is right.**
+**The domain was unconfirmed at merge, and has since been settled.** It is `brightontaxis.westerncars.com`, confirmed 2026-10-21 and now the committed default in `siteUrl()`, still overridable by `NEXT_PUBLIC_SITE_URL` for previews. Until that change landed, every canonical tag, sitemap entry and feed GUID named the wrong origin.
+
+Note this is *this application's* origin and not the company's main domain: `westerncarsbrighton.co.uk` still owns the business email and the `LocalBusiness` `@id` in `components/Seo.tsx`, which renders on blog pages too — so an article now asserts one origin in its canonical and another in its business identity. That needs a decision about which domain is the canonical identity, not a find-replace, and is untouched here.
 
 **Lint:** `lint` was previously `eslint` with no path, so it checked nothing. It is now `eslint .`, which surfaced 10 pre-existing errors. I fixed the 5 my own changes caused; **5 remain** (`no-explicit-any` in `SmoothScroll.tsx` ×4 and `locomotive-scroll.d.ts` ×1), plus 6 `<img>` warnings. Left alone as outside the scope of that work.
 
