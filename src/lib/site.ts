@@ -8,14 +8,21 @@
 /**
  * This site's own public origin, with no trailing slash.
  *
- * The default is the domain already declared in the site's metadata. Override
- * it per environment with NEXT_PUBLIC_SITE_URL; it is deliberately public,
- * because the browser needs the canonical origin too, and it is not a secret.
+ * Confirmed 2026-10-21 as brightontaxis.westerncars.com. Override it per
+ * environment with NEXT_PUBLIC_SITE_URL (preview deployments, local work); it
+ * is deliberately public, because the browser needs the canonical origin too,
+ * and it is not a secret.
+ *
+ * Note this is *this application's* origin, which is not the same thing as the
+ * company's main domain: westerncarsbrighton.co.uk still owns the business
+ * email and the LocalBusiness identity in components/Seo.tsx. Canonical tags,
+ * the sitemap and the RSS feed must all use the origin below, because that is
+ * where these pages actually answer.
  */
 export function siteUrl() {
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
 
-  return (configured || "https://www.westerncarsbrighton.co.uk").replace(
+  return (configured || "https://brightontaxis.westerncars.com").replace(
     /\/+$/,
     "",
   );
