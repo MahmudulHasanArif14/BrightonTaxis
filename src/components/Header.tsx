@@ -7,12 +7,16 @@ import Link from "next/link";
 export default function Header() {
   const [open, setOpen] = useState(false);
 
+  // Root-relative, not bare hashes. The header also renders on /blog and
+  // /blog/<slug>, where "#services" would resolve against the article URL and
+  // scroll nowhere. "/#services" navigates home and then to the section.
   const navItems = [
-    { label: "Home", href: "#" },
-    { label: "Services", href: "#services" },
-    { label: "Fleet", href: "#fleet" },
-    { label: "About", href: "#about" },
-    { label: "Contact", href: "#contact" },
+    { label: "Home", href: "/" },
+    { label: "Services", href: "/#services" },
+    { label: "Fleet", href: "/#fleet" },
+    { label: "Blog", href: "/blog" },
+    { label: "About", href: "/#about" },
+    { label: "Contact", href: "/#contact" },
   ];
 
   return (

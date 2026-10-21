@@ -57,29 +57,29 @@ export default function Footer() {
             <h3 className="font-semibold text-white mb-4">Our Services</h3>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>
-                <a href="#services" className="hover:text-green-400 transition-colors">
+                <Link href="/#services" className="hover:text-green-400 transition-colors">
                   Airport Transfers
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#services" className="hover:text-green-400 transition-colors">
+                <Link href="/#services" className="hover:text-green-400 transition-colors">
                   Local Journeys
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#services" className="hover:text-green-400 transition-colors">
+                <Link href="/#services" className="hover:text-green-400 transition-colors">
                   Corporate Accounts
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#services" className="hover:text-green-400 transition-colors">
+                <Link href="/#services" className="hover:text-green-400 transition-colors">
                   Event Hire
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#services" className="hover:text-green-400 transition-colors">
+                <Link href="/#services" className="hover:text-green-400 transition-colors">
                   Accessible Taxis
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -117,13 +117,21 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <Link href="#fleet" className="hover:text-green-400 transition-colors">
+                <Link href="/#fleet" className="hover:text-green-400 transition-colors">
                   Our Fleet
                 </Link>
               </li>
               <li>
-                <Link href="#about" className="hover:text-green-400 transition-colors">
+                <Link href="/#about" className="hover:text-green-400 transition-colors">
                   About Us
+                </Link>
+              </li>
+              {/* An internal link to the blog from every page. A page that is
+                  only reachable from a sitemap is a page crawlers reach last
+                  and users never reach at all. */}
+              <li>
+                <Link href="/blog" className="hover:text-green-400 transition-colors">
+                  Travel Advice &amp; Guides
                 </Link>
               </li>
             </ul>

@@ -1,46 +1,29 @@
 import { NextResponse } from "next/server";
+import { listArticles } from "@/lib/content-api";
+import {
+  BLOG_DESCRIPTION,
+  BLOG_PATH,
+  BLOG_TITLE,
+  SITE_NAME,
+  siteUrl,
+} from "@/lib/site";
 
-const siteUrl = "https://www.westerncarsbrighton.co.uk";
+export const dynamic = "force-dynamic";
 
-const posts = [
-  {
-    title: "Which Vehicle Do You Need for an Airport Transfer?",
-    description:
-      "A practical guide to choosing the right vehicle for an airport transfer, including saloons, estates, multi-seaters and accessible taxis.",
-    path: "/blog/which-vehicle-for-an-airport-transfer/",
-    date: "2026-10-15",
-  },
-  {
-    title: "Getting Home Safely After a Night Out in Brighton",
-    description:
-      "Practical advice on pre-booking, choosing safe pickup points and checking your driver.",
-    path: "/blog/getting-home-after-a-night-out-in-brighton/",
-    date: "2026-10-12",
-  },
-  {
-    title: "How Much Does a Taxi from Brighton to Gatwick Airport Cost?",
-    description:
-      "A guide to Brighton to Gatwick taxi fares, vehicle options and the factors that affect your price.",
-    path: "/blog/brighton-to-gatwick-taxi-cost/",
-    date: "2024-08-15",
-  },
-  {
-    title: "Best Ways to Get to the Amex Stadium on Match Day",
-    description:
-      "Explore transport options for Brighton & Hove Albion match days, including taxis, trains and park and ride.",
-    path: "/blog/amex-stadium-taxi-guide/",
-    date: "2024-08-10",
-  },
-  {
-    title: "A Guide to Brighton & Hove's Taxi Ranks and Rules",
-    description:
-      "Learn about taxi ranks in Brighton and Hove, licensing rules and the difference between taxis and private hire vehicles.",
-    path: "/blog/brighton-taxi-ranks-guide/",
-    date: "2024-08-05",
-  },
-];
+/**
+ * RSS 2.0 feed of this location's published articles.
+ *
+ * Previously this route carried a hardcoded list of five articles whose URLs
+ * pointed at /blog/ pages that did not exist on this site. It now reads the
+ * same central API the blog pages do, through the same client, so the feed and
+ * the website can never disagree about what has been published.
+ *
+ * A feed is a syndication format, not an indexing mechanism. It lets readers
+ * and aggregators follow the blog; it does not cause Google to index anything.
+ * Discovery comes from the sitemap and the internal links.
+ */
 
-function escapeXml(value: string) {
+function escapeXml(value: string): string {
   return value.replace(/[<>&'"]/g, (character) => {
     const entities: Record<string, string> = {
       "<": "&lt;",
@@ -54,38 +37,88 @@ function escapeXml(value: string) {
   });
 }
 
-export async function GET() {
-  const items = posts
-    .map((post) => {
-      const url = `${siteUrl}${post.path}`;
+/**
+ * Strip anything a validator would reject.
+ *
+ * Control characters are not legal in XML 1.0 at all, not even escaped, and a
+ * single stray one makes the whole document unparseable rather than just that
+ * one element.
+ */
+function xmlText(value: string): string {
+  // eslint-disable-next-line no-control-regex
+  return escapeXml(value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ""));
+}
 
-      return `
-        <item>
-          <title>${escapeXml(post.title)}</title>
-          <description>${escapeXml(post.description)}</description>
-          <link>${url}</link>
-          <guid isPermaLink="true">${url}</guid>
-          <pubDate>${new Date(`${post.date}T12:00:00Z`).toUTCString()}</pubDate>
-        </item>`;
+export async function GET() {
+  const base = siteUrl();
+  const feedUrl = `${base}/feed.xml`;
+  const blogUrl = `${base}${BLOG_PATH}`;
+
+  // Never 503 because the platform is slow: listArticles already degrades to
+  // what it could fetch, and an empty but valid feed is a better answer to an
+  // aggregator than an error it will back off from.
+  const { articles } = await listArticles({ limit: 50 }).catch(() => ({
+    articles: [],
+    truncated: true,
+  }));
+
+  const items = articles
+    .map((article) => {
+      // Links point at this site's own article pages, which now exist.
+      const url = `${base}${BLOG_PATH}/${encodeURIComponent(article.slug)}`;
+      const description =
+        article.meta_description || article.excerpt || article.title;
+
+      const published = article.published_at
+        ? new Date(article.published_at)
+        : null;
+
+      const pubDate =
+        published && !Number.isNaN(published.getTime())
+          ? `\n      <pubDate>${published.toUTCString()}</pubDate>`
+          : "";
+
+      // An RSS guid must be unique and stable. The slug-based URL is both; the
+      // publication date is not, because an edit can change it.
+      return `    <item>
+      <title>${xmlText(article.title)}</title>
+      <description>${xmlText(description)}</description>
+      <link>${xmlText(url)}</link>
+      <guid isPermaLink="true">${xmlText(url)}</guid>${pubDate}
+    </item>`;
     })
-    .join("");
+    .join("\n");
+
+  const newest = articles[0]?.published_at;
+
+  const lastBuildDate =
+    newest && !Number.isNaN(new Date(newest).getTime())
+      ? new Date(newest).toUTCString()
+      : // Falls back to "now" rather than being omitted: an aggregator uses
+        // this to decide whether to re-read, and a feed whose build date never
+        // moves looks abandoned.
+        new Date().toUTCString();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Western Cars Brighton Blog</title>
-    <link>${siteUrl}/blog/</link>
-    <description>Taxi advice, airport transfer guides and local travel information from Western Cars Brighton.</description>
+    <title>${xmlText(`${BLOG_TITLE} | ${SITE_NAME}`)}</title>
+    <link>${xmlText(blogUrl)}</link>
+    <description>${xmlText(BLOG_DESCRIPTION)}</description>
     <language>en-GB</language>
-    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    ${items}
+    <lastBuildDate>${lastBuildDate}</lastBuildDate>
+    <atom:link href="${xmlText(feedUrl)}" rel="self" type="application/rss+xml" />
+${items}
   </channel>
-</rss>`;
+</rss>
+`;
 
   return new NextResponse(xml, {
     headers: {
       "Content-Type": "application/rss+xml; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      // The webhook revalidates this route on publication, so a longer edge
+      // cache is safe; the 15-minute floor is the fallback if it never fires.
+      "Cache-Control": "public, s-maxage=900, stale-while-revalidate=3600",
     },
   });
 }
