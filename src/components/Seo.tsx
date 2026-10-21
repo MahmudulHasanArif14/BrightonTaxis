@@ -1,11 +1,25 @@
+import { siteUrl } from "@/lib/site";
+
 export function LocalBusinessJsonLd() {
+  // @id is an identity claim and url is where that identity lives, so both
+  // must name the origin these pages are actually served from. They were
+  // hardcoded to www.westerncarsbrighton.co.uk, which stopped being this
+  // site's address and left the homepage asserting one origin in its
+  // canonical tag and another in its structured data.
+  //
+  // Reading from siteUrl() rather than writing the domain out again: the same
+  // drift is what site.ts was created to stop. The business email below is
+  // deliberately left on westerncarsbrighton.co.uk -- that is a real mailbox,
+  // not a URL.
+  const origin = siteUrl();
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "TaxiService",
     name: "Western Cars Brighton",
     image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800",
-    "@id": "https://www.westerncarsbrighton.co.uk",
-    url: "https://www.westerncarsbrighton.co.uk",
+    "@id": origin,
+    url: origin,
     telephone: "+441273220220",
     email: "info@westerncarsbrighton.co.uk",
     address: {
