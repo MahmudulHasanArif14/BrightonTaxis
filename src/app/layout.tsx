@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
-import { LocalBusinessJsonLd, FaqJsonLd } from "@/components/Seo";
 import { siteUrl } from "@/lib/site";
 
 const inter = Inter({
@@ -129,8 +128,10 @@ export default function RootLayout({
       className={`${inter.variable} ${poppins.variable} h-full antialiased`}
     >
       <head>
-        <LocalBusinessJsonLd />
-        <FaqJsonLd />
+        {/* The TaxiService and FAQPage structured data used to live here, so
+            every page in the site claimed to be the business's homepage and to
+            answer the same five questions. Both now render on the homepage
+            only -- see app/page.tsx. */}
         <meta name="geo.region" content="GB-ESX" />
         <meta name="geo.placename" content="Brighton" />
         <meta name="geo.position" content="50.8225;-0.1372" />
