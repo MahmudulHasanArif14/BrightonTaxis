@@ -1,11 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Star } from "lucide-react";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useReveal } from "./useReveal";
 
 const reviews = [
   {
@@ -24,6 +20,21 @@ const reviews = [
     text: "Booking was effortless and the chauffeur was fantastic. Will definitely use again.",
   },
   {
+    name: "Oliver H.",
+    location: "East Grinstead",
+    text: "Our driver drove us home safely and efficiently. Friendly, professional and good value for money.",
+  },
+  {
+    name: "Mrs Stacey",
+    location: "Crawley",
+    text: "Super lady driver. Clean vehicle, very comfortable journey and excellent customer service. Highly recommended.",
+  },
+  {
+    name: "Megan Watkinson",
+    location: "London · Heathrow",
+    text: "Amazing communication and a fantastic driver. Booking was effortless and the fixed price was exactly as quoted.",
+  },
+  {
     name: "Mr Treharne",
     location: "Brighton",
     text: "Excellent BMW 5 Series. Very clean, punctual and extremely professional chauffeur.",
@@ -31,25 +42,15 @@ const reviews = [
 ];
 
 export default function Testimonials() {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from(".review-card", {
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 75%",
-        },
-        y: 40,
-        opacity: 0,
-        duration: 0.7,
-        stagger: 0.12,
-        ease: "power3.out",
-      });
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, []);
+  const sectionRef = useReveal<HTMLElement>([
+    {
+      selector: ".review-card",
+      start: 0.75,
+      from: { y: 40 },
+      duration: 0.7,
+      stagger: 0.12,
+    },
+  ]);
 
   return (
     <section
@@ -59,12 +60,17 @@ export default function Testimonials() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <p className="text-green-600 font-semibold text-sm tracking-wider uppercase mb-2">
+          <p className="text-green-700 font-semibold text-sm tracking-wider uppercase mb-2">
             Client Reviews
           </p>
           <h2 className="font-display text-3xl sm:text-4xl font-bold text-gray-900">
             Trusted by Thousands
           </h2>
+          <p className="text-gray-600 mt-3 max-w-2xl mx-auto">
+            Customers across Brighton &amp; Hove, Gatwick, Crawley, Horsham,
+            Lewes and the surrounding areas trust Western Cars for airport
+            transfers, executive travel and everyday journeys.
+          </p>
           <div className="flex items-center justify-center gap-2 mt-4">
             <div className="flex">
               {[...Array(5)].map((_, i) => (
@@ -75,7 +81,7 @@ export default function Testimonials() {
               ))}
             </div>
             <span className="text-gray-700 font-semibold">5.0</span>
-            <span className="text-gray-500 text-sm">
+            <span className="text-gray-600 text-sm">
               based on 700+ verified reviews
             </span>
           </div>
@@ -98,7 +104,7 @@ export default function Testimonials() {
               <p className="text-gray-700 leading-relaxed mb-4">&ldquo;{r.text}&rdquo;</p>
               <div>
                 <p className="font-semibold text-gray-900">{r.name}</p>
-                <p className="text-sm text-gray-500">{r.location}</p>
+                <p className="text-sm text-gray-600">{r.location}</p>
               </div>
             </div>
           ))}

@@ -76,7 +76,7 @@ export default async function BlogIndex() {
 
       <Header />
 
-      <main className="pt-24 md:pt-28 pb-20 md:pb-28 bg-white">
+      <main id="main" className="pt-24 md:pt-28 pb-20 md:pb-28 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <header className="max-w-3xl mb-12">
             <p className="text-green-600 font-semibold text-sm tracking-wider uppercase mb-2">

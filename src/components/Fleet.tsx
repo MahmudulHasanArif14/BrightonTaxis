@@ -1,11 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { CheckCircle2, Clock, MapPin, Shield } from "lucide-react";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useReveal } from "./useReveal";
 
 const features = [
   {
@@ -31,35 +27,18 @@ const features = [
 ];
 
 export default function Fleet() {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from(".fleet-left > *", {
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 75%",
-        },
-        y: 50,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.12,
-        ease: "power3.out",
-      });
-      gsap.from(".fleet-image", {
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 70%",
-        },
-        x: 60,
-        opacity: 0,
-        duration: 1,
-        ease: "power3.out",
-      });
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, []);
+  // Same distances, durations, stagger and start positions as before; only
+  // the thing that fires them has changed. See useReveal for why.
+  const sectionRef = useReveal<HTMLElement>([
+    {
+      selector: ".fleet-left > *",
+      start: 0.75,
+      from: { y: 50 },
+      duration: 0.8,
+      stagger: 0.12,
+    },
+    { selector: ".fleet-image", start: 0.7, from: { x: 60 }, duration: 1 },
+  ]);
 
   return (
     <section
@@ -77,13 +56,13 @@ export default function Fleet() {
           {/* Left content */}
           <div className="fleet-left space-y-8">
             <div>
-              <p className="text-green-600 font-semibold text-sm tracking-wider uppercase mb-3">
+              <p className="text-green-700 font-semibold text-sm tracking-wider uppercase mb-3">
                 Our Fleet
               </p>
               <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
                 Find the Perfect Ride
                 <br />
-                <span className="text-green-600">for Your Journey</span>
+                <span className="text-green-700">for Your Journey</span>
               </h2>
             </div>
             <p className="text-gray-600 text-lg leading-relaxed max-w-lg">
@@ -105,11 +84,11 @@ export default function Fleet() {
               {features.map((f) => (
                 <div key={f.title} className="flex gap-3">
                   <div className="flex-shrink-0 w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                    <f.icon className="w-5 h-5 text-green-600" />
+                    <f.icon className="w-5 h-5 text-green-700" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">{f.title}</h3>
-                    <p className="text-sm text-gray-500 mt-0.5">{f.desc}</p>
+                    <p className="text-sm text-gray-600 mt-0.5">{f.desc}</p>
                   </div>
                 </div>
               ))}
@@ -120,15 +99,28 @@ export default function Fleet() {
           <div className="fleet-image relative">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl green-glow">
               <img
+                loading="lazy"
                 src="https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=900&q=80"
-                alt="BMW X5 – Premium SUV available with Western Cars"
+                alt="An executive saloon of the kind used for airport and corporate journeys"
                 className="w-full h-[420px] md:h-[520px] object-cover"
               />
               <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between">
                 <span className="bg-black/70 backdrop-blur text-white text-sm font-medium px-4 py-2 rounded-full">
-                  BMW X5
+                  Executive saloon
                 </span>
               </div>
+            </div>
+
+            {/* A second photograph, overlapping the first, so the column shows
+                the service as well as the car. Hidden below `sm`, where it
+                would crowd the stacked layout rather than add to it. */}
+            <div className="hidden sm:block absolute -bottom-10 -left-8 w-44 lg:w-52 rounded-2xl overflow-hidden shadow-xl ring-4 ring-white">
+              <img
+                loading="lazy"
+                src="https://images.pexels.com/photos/15774577/pexels-photo-15774577.jpeg?auto=compress&cs=tinysrgb&w=600"
+                alt="A driver holding the rear door open for a passenger"
+                className="w-full h-36 lg:h-44 object-cover"
+              />
             </div>
             {/* Decorative green blob behind */}
             <div className="absolute -bottom-6 -right-6 w-40 h-40 bg-green-400 rounded-3xl -z-10 opacity-80" />

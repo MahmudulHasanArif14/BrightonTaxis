@@ -1,32 +1,18 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Navigation } from "lucide-react";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useReveal } from "./useReveal";
 
 export default function CTA() {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from(".cta-content > *", {
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 80%",
-        },
-        y: 30,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.12,
-        ease: "power3.out",
-      });
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, []);
+  const sectionRef = useReveal<HTMLElement>([
+    {
+      selector: ".cta-content > *",
+      start: 0.8,
+      from: { y: 30 },
+      duration: 0.8,
+      stagger: 0.12,
+    },
+  ]);
 
   return (
     <section
@@ -34,10 +20,11 @@ export default function CTA() {
       data-scroll-section
       className="relative py-16 md:py-20 overflow-hidden"
     >
-      <div className="absolute inset-0">
+      <div className="absolute inset-0" aria-hidden="true">
         <img
+          loading="lazy"
           src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1920&q=80"
-          alt="Road at dusk"
+          alt=""
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/75" />
@@ -53,7 +40,7 @@ export default function CTA() {
               <h2 className="font-display text-2xl sm:text-3xl font-bold text-white">
                 Ready to hit the road?
               </h2>
-              <p className="text-white/70 mt-1">
+              <p className="text-white/85 mt-1">
                 Book your taxi today and make your journey unforgettable.
               </p>
             </div>

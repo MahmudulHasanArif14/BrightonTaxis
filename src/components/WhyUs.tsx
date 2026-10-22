@@ -1,31 +1,17 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useReveal } from "./useReveal";
 
 export default function WhyUs() {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from(".why-content > *", {
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 70%",
-        },
-        y: 40,
-        opacity: 0,
-        duration: 0.9,
-        stagger: 0.15,
-        ease: "power3.out",
-      });
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, []);
+  const sectionRef = useReveal<HTMLElement>([
+    {
+      selector: ".why-content > *",
+      start: 0.7,
+      from: { y: 40 },
+      duration: 0.9,
+      stagger: 0.15,
+    },
+  ]);
 
   return (
     <section
@@ -35,10 +21,11 @@ export default function WhyUs() {
       className="relative py-24 md:py-32 overflow-hidden"
     >
       {/* Background */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0" aria-hidden="true">
         <img
-          src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1920&q=80"
-          alt="Scenic mountain road at sunset"
+          loading="lazy"
+          src="https://images.pexels.com/photos/14205862/pexels-photo-14205862.jpeg?auto=compress&cs=tinysrgb&w=1920"
+          alt=""
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/75 to-black/50" />
@@ -54,7 +41,7 @@ export default function WhyUs() {
             <br />
             It&apos;s a Better Drive.
           </h2>
-          <p className="text-white/80 text-lg leading-relaxed mb-8">
+          <p className="text-white/90 text-lg leading-relaxed mb-8">
             At Western Cars Brighton we focus on comfort, safety and freedom.
             Our cars, our service and our support are all designed to give you
             the best travelling experience — whether it&apos;s a local trip or

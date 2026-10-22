@@ -10,7 +10,7 @@ declare module "locomotive-scroll" {
 
   export default class LocomotiveScroll {
     constructor(options?: LocomotiveScrollOptions);
-    on(event: string, callback: (...args: any[]) => void): void;
+    on(event: string, callback: (...args: unknown[]) => void): void;
     scrollTo(
       target: number | string | HTMLElement,
       options?: { duration?: number; disableLerp?: boolean }

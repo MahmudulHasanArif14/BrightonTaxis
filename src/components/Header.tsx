@@ -3,20 +3,28 @@
 import { useState } from "react";
 import { Menu, X, Phone } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
 
-  // Root-relative, not bare hashes. The header also renders on /blog and
-  // /blog/<slug>, where "#services" would resolve against the article URL and
-  // scroll nowhere. "/#services" navigates home and then to the section.
+  // Every item is a page. Services, About and Contact used to be "/#services",
+  // "/#about" and "/#contact", which sent the primary navigation to three
+  // strips on the landing page rather than to the three pages of the same
+  // name -- and "Contact", worst of all, landed you in the footer. Each now
+  // goes where its label says.
+  //
+  // The landing page keeps its own #services, #about and #fleet anchors for
+  // in-page links such as the hero's "Explore Fleet"; nothing in the header
+  // depends on them any more.
   const navItems = [
     { label: "Home", href: "/" },
-    { label: "Services", href: "/#services" },
-    { label: "Fleet", href: "/#fleet" },
+    { label: "Services", href: "/services" },
+    { label: "Airports", href: "/airport-transfers" },
+    { label: "Fleet", href: "/fleet" },
     { label: "Blog", href: "/blog" },
-    { label: "About", href: "/#about" },
-    { label: "Contact", href: "/#contact" },
+    { label: "About", href: "/about" },
+    { label: "Contact", href: "/contact" },
   ];
 
   return (
@@ -25,11 +33,14 @@ export default function Header() {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30 group-hover:scale-105 transition-transform">
-              <span className="text-white font-bold text-xl font-display">
-                W
-              </span>
-            </div>
+            <Image
+              src="/logo.png"
+              alt=""
+              width={307}
+              height={288}
+              priority
+              className="h-11 w-auto transition-transform group-hover:scale-105"
+            />
             <div>
               <span className="text-white font-bold text-lg tracking-tight font-display leading-none">
                 Western Cars
@@ -41,19 +52,19 @@ export default function Header() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-6">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.label}
                 href={item.href}
                 className="text-white/80 hover:text-green-400 transition-colors text-sm font-medium"
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
-          <div className="hidden md:flex items-center gap-5">
+          <div className="hidden md:flex items-center gap-4">
             <a
               href="tel:01273220220"
               className="flex items-center gap-2 text-white/80 hover:text-green-400 text-sm transition-colors"
@@ -73,7 +84,7 @@ export default function Header() {
 
           {/* Mobile toggle */}
           <button
-            className="md:hidden text-white p-2"
+            className="lg:hidden text-white p-2"
             onClick={() => setOpen(!open)}
             aria-label="Toggle menu"
           >
@@ -84,17 +95,17 @@ export default function Header() {
 
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden bg-black/95 border-t border-white/10">
+        <div className="lg:hidden bg-black/95 border-t border-white/10">
           <div className="px-4 py-6 space-y-4">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.label}
                 href={item.href}
-                className="block text-white/80 hover:text-green-400 text-base font-medium"
+                className="block py-1 text-white/80 hover:text-green-400 text-base font-medium"
                 onClick={() => setOpen(false)}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
             <a
               href="tel:01273220220"

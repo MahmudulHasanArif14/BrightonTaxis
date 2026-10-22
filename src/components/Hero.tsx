@@ -7,37 +7,52 @@ export default function Hero() {
   const heroRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    // The hero animates on load rather than on scroll, which is why it was
+    // not covered by useReveal -- and why it kept useReveal's bug: gsap.from
+    // hides an element on the first frame and only an animation that actually
+    // runs brings it back. Measured in the browser, both calls to action sat
+    // at opacity 0 under prefers-reduced-motion. Nothing here is allowed to
+    // hide content it might not reveal, so reduced motion skips the whole
+    // sequence and the hero renders exactly as the stylesheet draws it.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    // Same distances, durations, delays, stagger and easing as before. What
+    // changed is that each step now sets its own start state and tweens to the
+    // finish, instead of gsap.from inferring the start. Measured over six
+    // seconds, the .hero-cta from-tween applied opacity 0 on the first frame
+    // and then never ran, so "Book Your Taxi" and "Explore Fleet" -- the two
+    // things the page exists to offer -- stayed invisible on every load while
+    // the headline beside them animated normally. gsap.to is explicit about
+    // where it is going, and it is what the rest of the page already uses.
+    const steps: {
+      selector: string;
+      y: number;
+      duration: number;
+      delay: number;
+      ease: string;
+      stagger?: number;
+    }[] = [
+      { selector: ".hero-title", y: 80, duration: 1.2, delay: 0.2, ease: "power3.out" },
+      { selector: ".hero-sub", y: 40, duration: 1, delay: 0.5, ease: "power3.out" },
+      { selector: ".hero-cta", y: 30, duration: 0.8, delay: 0.8, ease: "power3.out", stagger: 0.12 },
+      { selector: ".hero-feature", y: 20, duration: 0.6, delay: 1.1, ease: "power2.out", stagger: 0.1 },
+    ];
+
     const ctx = gsap.context(() => {
-      gsap.from(".hero-title", {
-        y: 80,
-        opacity: 0,
-        duration: 1.2,
-        ease: "power3.out",
-        delay: 0.2,
-      });
-      gsap.from(".hero-sub", {
-        y: 40,
-        opacity: 0,
-        duration: 1,
-        ease: "power3.out",
-        delay: 0.5,
-      });
-      gsap.from(".hero-cta", {
-        y: 30,
-        opacity: 0,
-        duration: 0.8,
-        ease: "power3.out",
-        delay: 0.8,
-        stagger: 0.12,
-      });
-      gsap.from(".hero-feature", {
-        y: 20,
-        opacity: 0,
-        duration: 0.6,
-        ease: "power2.out",
-        delay: 1.1,
-        stagger: 0.1,
-      });
+      for (const step of steps) {
+        const nodes = gsap.utils.toArray<HTMLElement>(step.selector);
+        if (nodes.length === 0) continue;
+        gsap.set(nodes, { opacity: 0, y: step.y });
+        gsap.to(nodes, {
+          opacity: 1,
+          y: 0,
+          duration: step.duration,
+          delay: step.delay,
+          ease: step.ease,
+          stagger: step.stagger,
+          overwrite: "auto",
+        });
+      }
     }, heroRef);
 
     return () => ctx.revert();
@@ -50,10 +65,10 @@ export default function Hero() {
       className="relative min-h-screen flex items-center overflow-hidden"
     >
       {/* Background */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0" aria-hidden="true">
         <img
           src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1920&q=80"
-          alt="Premium vehicle on scenic coastal road near Brighton"
+          alt=""
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/65 to-black/30" />
@@ -70,7 +85,7 @@ export default function Hero() {
             <br />
             <span className="text-green-400">for Every Journey</span>
           </h1>
-          <p className="hero-sub text-lg text-white/80 mb-10 max-w-lg leading-relaxed">
+          <p className="hero-sub text-lg text-white/90 mb-10 max-w-lg leading-relaxed">
             From city rides to Gatwick &amp; Heathrow airport transfers, Western
             Cars Brighton brings you the perfect vehicle for every destination.
             Licensed private hire since 2007.
@@ -108,7 +123,7 @@ export default function Hero() {
               <p className="font-semibold text-white text-sm md:text-base">
                 {item.title}
               </p>
-              <p className="text-white/60 text-xs md:text-sm mt-0.5">
+              <p className="text-white/75 text-xs md:text-sm mt-0.5">
                 {item.sub}
               </p>
             </div>

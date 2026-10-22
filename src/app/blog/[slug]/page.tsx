@@ -172,7 +172,7 @@ export default async function ArticlePage({ params }: Params) {
 
       <Header />
 
-      <main className="pt-24 md:pt-28 pb-20 bg-white">
+      <main id="main" className="pt-24 md:pt-28 pb-20 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Visible breadcrumb as well as the markup, so the internal link to
               the listing exists for crawlers and for readers. */}

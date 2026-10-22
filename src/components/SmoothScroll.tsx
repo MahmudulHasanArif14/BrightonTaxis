@@ -2,6 +2,25 @@
 
 import { useEffect, useRef } from "react";
 
+/**
+ * Locomotive Scroll wrapper for the landing page.
+ *
+ * This used to also bridge Locomotive to GSAP ScrollTrigger with a
+ * `scrollerProxy`, so that the sections' scroll-triggered entrances would fire
+ * against the transformed container instead of the frozen window.
+ *
+ * That bridge never worked, for a reason no amount of tuning would have fixed:
+ * it was installed after `await import(...)` resolved, which is several frames
+ * after every section's own effect had already created its triggers against
+ * the default scroller. The sections had hidden themselves and bound to a
+ * window that Locomotive had just made unscrollable, and the proxy arrived too
+ * late to matter. The whole page below the hero rendered blank.
+ *
+ * The entrances no longer use ScrollTrigger at all — see useReveal, which
+ * observes real geometry and so is indifferent to how the page scrolls. With
+ * nothing left to bridge, the proxy, the refresh listener and both GSAP
+ * imports are gone. What remains is Locomotive and its teardown.
+ */
 export default function SmoothScroll({
   children,
 }: {
@@ -14,29 +33,20 @@ export default function SmoothScroll({
     if (!container) return;
 
     let cancelled = false;
-    let scroll: any = null;
-    let gsap: any = null;
-    let ScrollTrigger: any = null;
-    let onRefresh: (() => void) | null = null;
+    type LocomotiveScroll = InstanceType<
+      typeof import("locomotive-scroll").default
+    >;
+    let scroll: LocomotiveScroll | null = null;
 
     const init = async () => {
       try {
-        // Load browser-dependent libraries only on the client.
-        const [locomotiveModule, gsapModule, triggerModule] = await Promise.all(
-          [
-            import("locomotive-scroll"),
-            import("gsap"),
-            import("gsap/ScrollTrigger"),
-          ],
+        // Browser-dependent, so it is loaded on the client and never during
+        // server rendering.
+        const { default: LocomotiveScroll } = await import(
+          "locomotive-scroll"
         );
 
         if (cancelled || !container.isConnected) return;
-
-        const LocomotiveScroll = locomotiveModule.default;
-        gsap = gsapModule.gsap;
-        ScrollTrigger = triggerModule.ScrollTrigger;
-
-        gsap.registerPlugin(ScrollTrigger);
 
         scroll = new LocomotiveScroll({
           el: container,
@@ -46,39 +56,10 @@ export default function SmoothScroll({
           smartphone: { smooth: true },
           tablet: { smooth: true },
         });
-
-        scroll.on("scroll", ScrollTrigger.update);
-
-        ScrollTrigger.scrollerProxy(container, {
-          scrollTop(value?: number) {
-            if (arguments.length && value !== undefined) {
-              scroll.scrollTo(value, {
-                duration: 0,
-                disableLerp: true,
-              });
-              return;
-            }
-
-            return scroll.scroll.instance.scroll.y;
-          },
-
-          getBoundingClientRect() {
-            return {
-              top: 0,
-              left: 0,
-              width: window.innerWidth,
-              height: window.innerHeight,
-            };
-          },
-
-          pinType: container.style.transform ? "transform" : "fixed",
-        });
-
-        onRefresh = () => scroll?.update();
-
-        ScrollTrigger.addEventListener("refresh", onRefresh);
-        ScrollTrigger.refresh();
       } catch (error) {
+        // A failure here costs the page its smooth scrolling and nothing
+        // else: the browser's own scrolling still works, and the section
+        // entrances do not depend on this running.
         if (!cancelled) {
           console.error("Failed to initialize smooth scrolling:", error);
         }
@@ -89,19 +70,6 @@ export default function SmoothScroll({
 
     return () => {
       cancelled = true;
-
-      if (ScrollTrigger && onRefresh) {
-        ScrollTrigger.removeEventListener("refresh", onRefresh);
-      }
-
-      if (ScrollTrigger) {
-        ScrollTrigger.getAll().forEach((trigger: any) => {
-          if (trigger.scroller === container) trigger.kill();
-        });
-
-        ScrollTrigger.scrollerProxy(container, null);
-      }
-
       scroll?.destroy();
     };
   }, []);

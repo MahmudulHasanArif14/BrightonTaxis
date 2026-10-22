@@ -9,6 +9,15 @@
 :root {
   --primary: #22c55e;
   --primary-dark: #16a34a;
+  /* The accessible green for text and icons on a light surface. #22c55e
+     measures about 2.3:1 on white and #16a34a about 3.1:1, so neither can
+     carry small type; this one clears 4.5:1. */
+  --primary-text: #15803d;
+  /* Pulled from the logo badge, which is teal and indigo rather than green.
+     Used for the ink of dark surfaces so the mark sits in a family instead of
+     floating on neutral black. */
+  --brand-deep: #0d2b33;
+  --brand-ink: #071a1f;
   --dark: #0a0a0a;
   --dark-card: #111827;
 
@@ -53,23 +62,42 @@ h6 {
   font-family: var(--font-heading);
 }
 
-/* Links */
-a {
-  color: inherit;
-  text-decoration: none;
+/* Links
+   ----------------------------------------
+   Layered for the same reason as the media rules above. Unlayered, this
+   `color: inherit` outranked Tailwind's colour utilities on every anchor, so
+   the header navigation, the hero's two calls to action and "View All Cars"
+   were all painted in the body's near-black instead of the colour their class
+   asked for -- near-black on a black header, which is why the navigation was
+   effectively invisible. In a layer, a utility on the element wins and a plain
+   anchor still inherits. */
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
-/* Media */
-img,
-video,
-svg,
-canvas {
-  display: block;
-  max-width: 100%;
-}
+/* Media
+   ----------------------------------------
+   These sit in `@layer base` deliberately. Tailwind v4 puts its utilities in
+   a layer, and unlayered CSS outranks every layer regardless of specificity,
+   so an unlayered `img { height: auto }` silently beat `h-11` and any other
+   sizing utility applied to an image. Keeping the base rules in a layer lets
+   a utility do its job while the defaults still apply to images that set no
+   size of their own. */
+@layer base {
+  img,
+  video,
+  svg,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
 
-img {
-  height: auto;
+  img {
+    height: auto;
+  }
 }
 
 /* Form Elements */
@@ -90,14 +118,46 @@ button:disabled {
 
 /* Selection */
 ::selection {
-  background-color: var(--primary);
-  color: #ffffff;
+  background-color: #bbf7d0;
+  color: #052e16;
+}
+
+/* The caret is a browser default that belongs to no design system. */
+input,
+textarea {
+  caret-color: var(--primary-dark);
 }
 
 /* Focus Accessibility */
 :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 3px;
+  /* The green ring disappears against a green button, so a dark halo rides
+     under it and keeps the focus state visible on every surface. */
+  box-shadow: 0 0 0 5px rgba(5, 46, 22, 0.55);
+}
+
+/* The page scrollbar on every route that is not the smooth-scrolled landing
+   page, which draws its own. */
+@supports selector(::-webkit-scrollbar) {
+  html:not(.has-scroll-smooth) ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+
+  html:not(.has-scroll-smooth) ::-webkit-scrollbar-track {
+    background: #f1f5f3;
+  }
+
+  html:not(.has-scroll-smooth) ::-webkit-scrollbar-thumb {
+    border: 3px solid #f1f5f3;
+    border-radius: 10px;
+    background: #9ca3af;
+  }
+
+  html:not(.has-scroll-smooth) ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+  }
 }
 
 /* ========================================
@@ -161,6 +221,69 @@ html.has-scroll-dragging {
 
 .has-scroll-dragging .c-scrollbar_thumb {
   cursor: grabbing;
+}
+
+/* ========================================
+   Scroll Reveal
+   ----------------------------------------
+   Replaces GSAP + ScrollTrigger + Locomotive Scroll. The hidden state is
+   scoped to html[data-js], a flag set by an inline script in the layout, so
+   content without JavaScript is never hidden -- the old implementation
+   painted every section at opacity 0 and needed a script to bring it back.
+
+   The whole block is inside a no-preference media query, so a visitor who has
+   asked for reduced motion gets no transition and no hidden state at all.
+   ======================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  html[data-js] [data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+    transition:
+      opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+
+  html[data-js] [data-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+}
+
+/* ========================================
+   Hero Treatment
+   ----------------------------------------
+   The dark banner behind every hero. This is the replacement for four
+   full-bleed Unsplash photographs: a gradient plus one tiled SVG, both inline
+   in this stylesheet, so a hero costs no network request and cannot break
+   because a third-party image host changed its mind.
+   ======================================== */
+
+.hero-wash {
+  background-image:
+    radial-gradient(
+      70% 90% at 12% 8%,
+      rgba(34, 197, 94, 0.22) 0%,
+      rgba(34, 197, 94, 0) 60%
+    ),
+    radial-gradient(
+      60% 80% at 88% 92%,
+      rgba(42, 138, 160, 0.26) 0%,
+      rgba(42, 138, 160, 0) 65%
+    ),
+    linear-gradient(135deg, var(--brand-ink) 0%, var(--brand-deep) 48%, var(--brand-ink) 100%);
+}
+
+/* A faint diagonal weave over the wash, echoing the pattern inside the logo
+   mark. Decorative only; the element carries aria-hidden. */
+.hero-wash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M0 48 48 0M-12 12 12 -12M36 60 60 36' stroke='%23ffffff' stroke-opacity='0.045' stroke-width='1' fill='none'/%3E%3C/svg%3E");
 }
 
 /* ========================================
@@ -295,4 +418,52 @@ body {
   .container-site {
     padding-inline: 1rem;
   }
+}
+/* ========================================
+   Long-form Content
+   ======================================== */
+
+.prose-site > * + * {
+  margin-top: 1.25rem;
+}
+
+.prose-site h2 {
+  margin-top: 2.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #111827;
+}
+
+.prose-site h3 {
+  margin-top: 2rem;
+  font-size: 1.175rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.prose-site ul {
+  margin-left: 0;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.prose-site li + li {
+  margin-top: 0.5rem;
+}
+
+.prose-site a {
+  color: var(--primary-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose-site a:hover {
+  color: #14532d;
+}
+
+.prose-site strong {
+  color: #111827;
+  font-weight: 600;
 }
